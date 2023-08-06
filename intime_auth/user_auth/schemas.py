@@ -2,9 +2,11 @@ from dataclasses import dataclass
 
 
 @dataclass
-class UserRegistration:
-    username: str
-    password: str
+class UserLogin:
     email: str
+    password: str
 
 
+@dataclass
+class UserRegistration(UserLogin):
+    username: str

@@ -1,0 +1,16 @@
+PROFILE
+
+
+<a href="#" onclick="logout()">Log Out</a>
+
+<!-- Скрытая форма для отправки запроса на logout -->
+<form id="logoutForm" method="post" action="{% url 'auth:logout' %}">
+  {% csrf_token %}
+</form>
+
+<!-- JavaScript для отправки формы по клику на ссылку -->
+<script>
+function logout() {
+  document.getElementById("logoutForm").submit();
+}
+</script>

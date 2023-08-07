@@ -1,19 +1,12 @@
-import json
-
 from django.contrib.auth.hashers import check_password, make_password
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, JsonResponse
 
 from . import token_service
 from .models import User
 from .schemas import EditProfile, UserLogin, UserRegistration
 
 
-def create_user(request: HttpRequest) -> dict:
-    user = UserRegistration(
-        username=request.POST.get('username'),
-        password=request.POST.get('password'),
-        email=request.POST.get('email')
-    )
+def create_user(user: UserRegistration) -> dict:
     result = check_login_not_exists(user.username)
     if isinstance(result, str):
         error_message = result
@@ -39,10 +32,10 @@ def check_login_not_exists(login: str) -> bool | str:
 
 def check_email_not_exists(email: str) -> bool | str:
     try:
-        email = User.objects.get(email=email)
-        if email:
+        user = User.objects.get(email=email)
+        if user:
             error_message = ('A user with email %(email)s already exists. '
-                            'Please provide another email.' %{'email': email})
+                            'Please provide another email.' %{'email': user.email})
             return error_message
     except User.DoesNotExist:
         return True
@@ -58,11 +51,7 @@ def save_user_to_database(user: UserRegistration) -> str:
     return 'You have successfully signed up. Please log in.'
 
 
-def login_user(request: HttpRequest) -> dict:
-    user = UserLogin(
-        email=request.POST.get('email'),
-        password=request.POST.get('password')
-    )
+def login_user(user: UserLogin) -> dict:
     result = get_user_id_or_error(user.email, user.password)
     if isinstance(result, int):
         token = token_service.generate_tokens(result, user.email)
@@ -85,8 +74,8 @@ def get_user_id_or_error(email: str, password: str) -> int | str:
                 return user_id
             raise User.DoesNotExist
     except User.DoesNotExist:
-        error_message = 'You have entered the wrong login or password.<br>Please try again.'
-        return error_message
+        error = 'You have entered the wrong login or password.<br>Please try again.'
+        return error
 
 
 def logout_user(request: HttpRequest) -> str:

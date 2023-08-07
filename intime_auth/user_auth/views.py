@@ -4,6 +4,8 @@ from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, JsonRe
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from intime_auth.user_auth.schemas import UserLogin, UserRegistration
+
 from . import user_service
 from .models import User
 
@@ -11,7 +13,12 @@ from .models import User
 
 def register(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
-        return_value: dict = user_service.create_user(request)
+        user = UserRegistration(
+            username=request.POST.get('username'),
+            password=request.POST.get('password'),
+            email=request.POST.get('email')
+        )
+        return_value: dict = user_service.create_user(user)
         error = return_value.get('error_message', None)
         if error:
             return render(request, 'register.html', {'error': error}, status=400)
@@ -21,7 +28,11 @@ def register(request: HttpRequest) -> HttpResponse:
 
 def login(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
-        return_value: dict = user_service.login_user(request)
+        user = UserLogin(
+            email=request.POST.get('email'),
+            password=request.POST.get('password')
+        )
+        return_value: dict = user_service.login_user(user)
         error = return_value.get('error_message', None)
         if error:
             return render(request, 'login.html', {'error': error}, status=401)

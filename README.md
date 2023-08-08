@@ -21,24 +21,24 @@
 4. Create an .env-file from .env.example.
 5. Apply migrations: move to the directory "intime_auth" and run the command:
 
-     ```
-     python manage.py migrate
-     ```
+```
+    python manage.py migrate
+```
 
 6. Run the Django debug server: move to the directory "intime_auth" and run the command:
    
-   ```
-     python manage.py runserver 127.0.0.1:8001
-   ```
+```
+    python manage.py runserver 127.0.0.1:8001
+```
 
 10. The browser version of the application:
 
-   ```
-   http://127.0.0.1:8001/auth/register/
-   ```
+```
+    http://127.0.0.1:8001/auth/register/
+```
 
 11. API endpoints prefix:
    
-    ```
-   http://127.0.0.1:8001/api/v1/auth/
-   ```
+```
+    http://127.0.0.1:8001/api/v1/auth/
+```

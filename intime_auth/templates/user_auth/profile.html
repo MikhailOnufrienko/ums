@@ -43,6 +43,7 @@
 <div class="text-center">
   <a href="#" onclick="logout()">Log Out</a>
   <a href="{% url 'auth:edit_profile' user_id %}">Edit Profile</a>
+  <a href="#" onclick="delete_profile()">Delete Profile</a>
 </div>
 
 
@@ -50,9 +51,16 @@
   {% csrf_token %}
 </form>
 
+<form id="deleteForm" method="post" action="{% url 'auth:delete_profile' user_id %}">
+  {% csrf_token %}
+</form>
+
 <script>
 function logout() {
   document.getElementById("logoutForm").submit();
+}
+function delete_profile() {
+  document.getElementById("deleteForm").submit();
 }
 </script>
 

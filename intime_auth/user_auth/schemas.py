@@ -16,6 +16,7 @@ class UserRegistration(UserLogin):
 @dataclass
 class UserProfile:
     username: str
+    email: str
     full_name: str
     phone_number: str
     joined_dt: datetime

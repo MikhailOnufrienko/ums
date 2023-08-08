@@ -12,8 +12,14 @@
                     <div class="card-header text-center">
                         <h4>Log In</h4>
                     </div>
-                    {% if error %}
-                         <div class="text-center"><p style="color: red;">{{ error|safe }}</p></div>
+                    {% if messages %}
+                         <div class="text-center">
+                            <div class="messages">
+                                {% for message in messages %}
+                                    <div class="{{ message.tags }}">{{ message }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
                     {% endif %}
                     <div class="card-body">
                         <form method="post">

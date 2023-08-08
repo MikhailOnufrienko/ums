@@ -10,7 +10,9 @@ urlpatterns = [
     path('logout/', views.logout, name='logout'),
     path('profile/<int:pk>/', views.profile, name='profile'),
     path('profile/<int:pk>/update/', views.edit_profile, name='edit_profile'),
+    path('profile/<int:pk>/delete/', views.delete_profile, name='delete_profile'),
     path('profile/<int:pk>/updated/', views.edit_profile_success, name='edit_profile_success'),
+    path('profile/deleted/', views.delete_profile_success, name='delete_profile_success'),
 ]
 
 handler403 = 'user_auth.views.handle_forbidden'

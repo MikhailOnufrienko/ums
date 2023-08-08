@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Profile Updated</title>
+    <title>Profile Deleted</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container mt-5">
         <div class="alert alert-success" role="alert">
-            <h4 class="alert-heading">You have successfully updated you profile!</h4>
-            <p>Now you profile is up-to-date.</p>
+            <h4 class="alert-heading">You have successfully deleted you profile!</h4>
+            <p>Would you like to sign up again?</p>
             <hr>
-            <p><a href="{% url 'auth:profile' user_id %}">Go to my profile.</a></p>
+            <p><a href="{% url 'auth:register' %}">Sign up again.</a></p>
         </div>
     </div>
 

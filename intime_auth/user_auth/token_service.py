@@ -32,7 +32,7 @@ def prepare_data_for_generating_tokens(data: dict, expires_delta: int) -> dict:
 
 def add_invalid_token_to_cache(token: str) -> None:
     current_datetime = datetime.now()
-    redis_key = f'invalid:{current_datetime}'
+    redis_key = f'invalid:{current_datetime}'.replace(' ', '')
     expires: int = settings.TOKEN_LIFE_IN_DAYS * 86400  # in seconds
     cache.set(redis_key, token, expires)
 
@@ -54,6 +54,7 @@ def get_id_by_token(token: str) -> int:
 def get_email_by_token(token: str) -> str:
     claims = jwt.get_unverified_claims(token)
     return claims['sub']
+
 
 def check_profile_view_permission(token: str, email: str) -> bool:
     viewer_email = get_email_by_token(token)

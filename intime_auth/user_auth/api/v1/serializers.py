@@ -13,3 +13,18 @@ class UserRegistrationSerializer(serializers.Serializer):
 class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField()
     email = serializers.EmailField()
+
+
+class UserProfileViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'username', 'email', 'full_name',
+            'phone_number', 'joined_dt', 'last_modified_dt'
+        ]
+
+
+class UserProfileEditSerializer(serializers.Serializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    phone_number = serializers.CharField()

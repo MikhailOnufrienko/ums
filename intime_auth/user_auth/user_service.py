@@ -1,5 +1,8 @@
 from django.contrib.auth.hashers import check_password, make_password
-from django.http import HttpRequest, JsonResponse
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.http import HttpRequest
+from jose import JWTError
 
 from . import token_service
 from .models import User
@@ -12,6 +15,10 @@ def create_user(user: UserRegistration) -> dict:
         error_message = result
         return {'error_message': error_message}
     result = check_email_not_exists(user.email)
+    if isinstance(result, str):
+        error_message = result
+        return {'error_message': error_message}
+    result = check_password_valid(user.password)
     if isinstance(result, str):
         error_message = result
         return {'error_message': error_message}
@@ -39,6 +46,13 @@ def check_email_not_exists(email: str) -> bool | str:
             return error_message
     except User.DoesNotExist:
         return True
+    
+
+def check_password_valid(password: str) -> bool | str:
+    try:
+        validate_password(password)
+    except ValidationError:
+        return 'You password must be at least 8 characters.'
 
 
 def save_user_to_database(user: UserRegistration) -> str:
@@ -48,7 +62,7 @@ def save_user_to_database(user: UserRegistration) -> str:
         password_hash=password_hash,
         email=user.email
     )
-    return 'You have successfully signed up. Please log in.'
+    return 'You have successfully signed up. Please sign in.'
 
 
 def login_user(user: UserLogin) -> dict:
@@ -85,10 +99,11 @@ def logout_user(request: HttpRequest) -> str:
 
 
 def get_user_profile(request: HttpRequest, user: User) -> dict:
-    try:
-        token = request.COOKIES['token']
-        email = user.email
-        user_id = token_service.get_id_by_token(token)
+    result = check_token_OK_and_get_claims_or_return_error(request, user)
+    token, email, user_id = (
+        result.get('token'), result.get('email'), result.get('user_id')
+    )
+    if token and token != '':
         if token_service.check_profile_view_permission(token, email):
             if token_service.check_token_not_used_for_logout(token):
                 if token_service.check_token_signature_valid(token):
@@ -102,25 +117,52 @@ def get_user_profile(request: HttpRequest, user: User) -> dict:
                         'phone_number': user.phone_number
                     }
                     return success
-            return {'token_error': 'Invalid authorization token. Please log in.'}
+            return {
+                'token_error': 'Invalid or expired authorization token. Please log in.'
+            }
         return {
             'auth_error': 'You\'re not allowed to view profile of other users.',
             'user_id': user_id
         }
+    return result
+   
+
+def edit_user_profile(request: HttpRequest, user: User, profile: EditProfile) -> dict:
+    result = check_token_OK_and_get_claims_or_return_error(request, user)
+    token, email, user_id = (
+        result.get('token'), result.get('email'), result.get('user_id')
+    )
+    if token:
+        if token_service.check_profile_view_permission(token, email):
+            if token_service.check_token_not_used_for_logout(token):
+                if token_service.check_token_signature_valid(token):
+                    if profile.first_name and profile.first_name != '':
+                        user.first_name = profile.first_name
+                    if profile.last_name and profile.last_name != '':
+                        user.last_name = profile.last_name
+                    if profile.phone_number and profile.phone_number != '':
+                        user.phone_number = profile.phone_number
+                    user.save()
+                    return {'success': 'Profile updated successfully.'}
+            return {
+                'token_error': 'Invalid or expired authorization token. Please log in.'
+            }
+        return {
+            'auth_error': 'You\'re not allowed to view profile of other users.',
+            'user_id': user_id
+        }
+    return result
+
+
+def check_token_OK_and_get_claims_or_return_error(
+        request: HttpRequest, user: User
+) -> dict:
+    try:
+        token = request.COOKIES['token']
+        email = user.email
+        user_id = token_service.get_id_by_token(token)
+        return {'token': token, 'email': email, 'user_id': user_id}
     except KeyError:
         return {'token_error': 'Authorization token not provided. Please log in.'}
-    
-
-def edit_user_profile(request: HttpRequest, user: User):
-    edit = EditProfile(
-            first_name=request.POST.get('first_name'),
-            last_name=request.POST.get('last_name'),
-            phone_number=request.POST.get('phone_number')
-        )
-    user.first_name = edit.first_name if edit.first_name != '' else user.first_name
-    user.last_name = edit.last_name if edit.last_name != '' else user.last_name
-    user.phone_number = (
-        edit.phone_number if edit.phone_number != '' else user.phone_number
-    )
-    user.save()
-    return JsonResponse({'success': 'Profile updated successfully.'}, status=200)
+    except JWTError:
+        return {'token_error': 'Authorization token is invalid. Please log in.'}

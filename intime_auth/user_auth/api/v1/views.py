@@ -15,6 +15,7 @@ from .serializers import (UserLoginSerializer, UserProfileViewSerializer,
 
 @api_view(['POST'])
 def register(request: Request) -> Response:
+    """Registr."""
     serializer = UserRegistrationSerializer(data=request.data)
     if serializer.is_valid():
         user_serialized: OrderedDict = serializer.validated_data
@@ -58,12 +59,16 @@ def login(request: Request) -> Response:
 @api_view(['POST'])
 def logout(request: Request) -> Response:
     token = request.headers.get('Authorization')
-    if token:
+    if token and token != '':
         token_service.add_invalid_token_to_cache(token)
         return Response(
             {'success': 'You have successfully logged out.'},
             status=status.HTTP_200_OK
         )
+    return Response(
+            {'error': 'Expired or invalid authorization token. Please log in.'},
+            status=status.HTTP_401_UNAUTHORIZED
+    )
 
 
 @api_view(['GET', 'PATCH', 'DELETE'])
@@ -107,7 +112,7 @@ def profile(request: Request, pk: int) -> Response:
                     token_service.add_invalid_token_to_cache(token)
                     return Response(
                                 {'success': 'You have deleted you profile.'},
-                                status=status.HTTP_200_OK
+                                status=status.HTTP_204_NO_CONTENT
                             )
         return Response(
             {'error': 'Expired or invalid authorization token. Please log in.'},

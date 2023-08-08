@@ -16,7 +16,7 @@
                          <div class="text-center">
                             <div class="messages">
                                 {% for message in messages %}
-                                    <div class="{{ message.tags }}">{{ message }}</div>
+                                    <div class="{{ message.tags }}">{{ message|safe }}</div>
                                 {% endfor %}
                             </div>
                         </div>

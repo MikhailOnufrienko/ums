@@ -38,7 +38,8 @@ def login(request: HttpRequest) -> HttpResponse:
         return_value: dict = user_service.login_user(user)
         error = return_value.get('error_message', None)
         if error:
-            return render(request, 'login.html', {'message': error}, status=401)
+            messages.error(request, error)
+            return render(request, 'login.html', status=401)
         token = return_value['header']['Authorization']
         user_id = return_value['user_id']
         response = redirect('auth:profile', user_id)
